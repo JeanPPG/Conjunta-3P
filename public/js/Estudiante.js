@@ -18,7 +18,7 @@ const createEstudiantePanel = () => {
         model: 'App.model.Estudiante',
         proxy: {
             type: 'rest',
-            url: '/api/estudiantes.php',
+            url: '/api/estudiante.php',
             reader: {
                 type: 'json',
                 rootProperty: ''
