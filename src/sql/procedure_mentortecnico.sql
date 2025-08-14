@@ -1,41 +1,41 @@
 DELIMITER $$
 
 -- =========================================================
--- LISTAR ESTUDIANTES
+-- LISTAR MENTORES TÉCNICOS
 -- =========================================================
-DROP PROCEDURE IF EXISTS sp_estudiante_list$$
-CREATE PROCEDURE sp_estudiante_list()
+DROP PROCEDURE IF EXISTS sp_mentor_tecnico_list$$
+CREATE PROCEDURE sp_mentor_tecnico_list()
 BEGIN
     SELECT
-        e.id,
+        m.id,
         p.codigo,
         p.nombre,
         p.email,
         p.nivelHabilidad,
         p.habilidades,
-        e.grado,
-        e.institucion,
-        e.tiempoDisponibleSemanal,
+        m.especialidad,
+        m.experiencia,
+        m.disponibilidadHoraria,
         p.created_at
-    FROM Estudiante e
-    JOIN Participante p ON e.id = p.id
-    WHERE p.tipo = 'ESTUDIANTE'
+    FROM MentorTecnico m
+    JOIN Participante p ON m.id = p.id
+    WHERE p.tipo = 'MENTOR_TECNICO'
     ORDER BY p.nombre ASC;
 END$$
 
 -- =========================================================
--- CREAR ESTUDIANTE
+-- CREAR MENTOR TÉCNICO
 -- =========================================================
-DROP PROCEDURE IF EXISTS sp_create_estudiante$$
-CREATE PROCEDURE sp_create_estudiante(
+DROP PROCEDURE IF EXISTS sp_create_mentor_tecnico$$
+CREATE PROCEDURE sp_create_mentor_tecnico(
     IN p_codigo VARCHAR(50),
     IN p_nombre VARCHAR(150),
     IN p_email VARCHAR(200),
     IN p_nivelHabilidad ENUM('basico','intermedio','avanzado'),
     IN p_habilidades JSON,
-    IN p_grado VARCHAR(30),
-    IN p_institucion VARCHAR(150),
-    IN p_tiempoDisponibleSemanal INT
+    IN p_especialidad VARCHAR(150),
+    IN p_experiencia INT,
+    IN p_disponibilidadHoraria VARCHAR(150)
 )
 BEGIN
     DECLARE v_new_part_id INT;
@@ -48,54 +48,54 @@ BEGIN
     START TRANSACTION;
 
     INSERT INTO Participante (codigo, tipo, nombre, email, nivelHabilidad, habilidades)
-    VALUES (p_codigo, 'ESTUDIANTE', p_nombre, p_email, p_nivelHabilidad, p_habilidades);
+    VALUES (p_codigo, 'MENTOR_TECNICO', p_nombre, p_email, p_nivelHabilidad, p_habilidades);
 
     SET v_new_part_id = LAST_INSERT_ID();
 
-    INSERT INTO Estudiante (id, grado, institucion, tiempoDisponibleSemanal)
-    VALUES (v_new_part_id, p_grado, p_institucion, p_tiempoDisponibleSemanal);
+    INSERT INTO MentorTecnico (id, especialidad, experiencia, disponibilidadHoraria)
+    VALUES (v_new_part_id, p_especialidad, p_experiencia, p_disponibilidadHoraria);
 
     COMMIT;
 
-    SELECT v_new_part_id AS estudiante_id;
+    SELECT v_new_part_id AS mentor_id;
 END$$
 
 -- =========================================================
--- BUSCAR ESTUDIANTE POR ID
+-- BUSCAR MENTOR TÉCNICO POR ID
 -- =========================================================
-DROP PROCEDURE IF EXISTS sp_find_estudiante$$
-CREATE PROCEDURE sp_find_estudiante(IN p_id INT)
+DROP PROCEDURE IF EXISTS sp_find_mentor_tecnico$$
+CREATE PROCEDURE sp_find_mentor_tecnico(IN p_id INT)
 BEGIN
     SELECT
-        e.id,
+        m.id,
         p.codigo,
         p.nombre,
         p.email,
         p.nivelHabilidad,
         p.habilidades,
-        e.grado,
-        e.institucion,
-        e.tiempoDisponibleSemanal,
+        m.especialidad,
+        m.experiencia,
+        m.disponibilidadHoraria,
         p.created_at
-    FROM Estudiante e
-    JOIN Participante p ON e.id = p.id
-    WHERE p.tipo = 'ESTUDIANTE'
-      AND e.id = p_id;
+    FROM MentorTecnico m
+    JOIN Participante p ON m.id = p.id
+    WHERE p.tipo = 'MENTOR_TECNICO'
+      AND m.id = p_id;
 END$$
 
 -- =========================================================
--- ACTUALIZAR ESTUDIANTE
+-- ACTUALIZAR MENTOR TÉCNICO
 -- =========================================================
-DROP PROCEDURE IF EXISTS sp_update_estudiante$$
-CREATE PROCEDURE sp_update_estudiante(
+DROP PROCEDURE IF EXISTS sp_update_mentor_tecnico$$
+CREATE PROCEDURE sp_update_mentor_tecnico(
     IN p_id INT,
     IN p_nombre VARCHAR(150),
     IN p_email VARCHAR(200),
     IN p_nivelHabilidad ENUM('basico','intermedio','avanzado'),
     IN p_habilidades JSON,
-    IN p_grado VARCHAR(30),
-    IN p_institucion VARCHAR(150),
-    IN p_tiempoDisponibleSemanal INT
+    IN p_especialidad VARCHAR(150),
+    IN p_experiencia INT,
+    IN p_disponibilidadHoraria VARCHAR(150)
 )
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -105,11 +105,11 @@ BEGIN
 
     -- Validar existencia
     IF NOT EXISTS (
-        SELECT 1 FROM Estudiante e
-        JOIN Participante p ON e.id = p.id
-        WHERE e.id = p_id AND p.tipo = 'ESTUDIANTE'
+        SELECT 1 FROM MentorTecnico m
+        JOIN Participante p ON m.id = p.id
+        WHERE m.id = p_id AND p.tipo = 'MENTOR_TECNICO'
     ) THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Estudiante no encontrado';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Mentor Técnico no encontrado';
     END IF;
 
     START TRANSACTION;
@@ -121,10 +121,10 @@ BEGIN
         habilidades = p_habilidades
     WHERE id = p_id;
 
-    UPDATE Estudiante
-    SET grado = p_grado,
-        institucion = p_institucion,
-        tiempoDisponibleSemanal = p_tiempoDisponibleSemanal
+    UPDATE MentorTecnico
+    SET especialidad = p_especialidad,
+        experiencia = p_experiencia,
+        disponibilidadHoraria = p_disponibilidadHoraria
     WHERE id = p_id;
 
     COMMIT;
@@ -133,10 +133,10 @@ BEGIN
 END$$
 
 -- =========================================================
--- ELIMINAR ESTUDIANTE
+-- ELIMINAR MENTOR TÉCNICO
 -- =========================================================
-DROP PROCEDURE IF EXISTS sp_delete_estudiante$$
-CREATE PROCEDURE sp_delete_estudiante(IN p_id INT)
+DROP PROCEDURE IF EXISTS sp_delete_mentor_tecnico$$
+CREATE PROCEDURE sp_delete_mentor_tecnico(IN p_id INT)
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -145,9 +145,9 @@ BEGIN
 
     START TRANSACTION;
 
-    -- Basta con borrar el Participante, por ON DELETE CASCADE eliminará Estudiante
+    -- Basta con borrar el Participante, ON DELETE CASCADE eliminará el subtipo
     DELETE FROM Participante
-    WHERE id = p_id AND tipo = 'ESTUDIANTE';
+    WHERE id = p_id AND tipo = 'MENTOR_TECNICO';
 
     COMMIT;
 
@@ -155,9 +155,6 @@ BEGIN
 END$$
 
 DELIMITER ;
--- =========================================================
 
 
--- para ver
-CALL sp_estudiante_list();
-CALL sp_find_estudiante(1);
+CALL sp_mentor_tecnico_list
