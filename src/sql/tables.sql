@@ -27,7 +27,6 @@ CREATE TABLE Hackathon (
 -- =========================================================
 CREATE TABLE Participante (
   id                 INT AUTO_INCREMENT PRIMARY KEY,
-  codigo             VARCHAR(50) NOT NULL UNIQUE,  
   tipo               ENUM('ESTUDIANTE','MENTOR_TECNICO') NOT NULL,
   nombre             VARCHAR(150) NOT NULL,
   email              VARCHAR(200) NOT NULL UNIQUE,
@@ -61,7 +60,6 @@ CREATE TABLE MentorTecnico (
 -- =========================================================
 CREATE TABLE Reto (
   id                  INT AUTO_INCREMENT PRIMARY KEY,
-  codigo              VARCHAR(50) NOT NULL UNIQUE,        
   hackathon_id        INT NULL,                           
   tipo                ENUM('REAL','EXPERIMENTAL') NOT NULL,
   titulo              VARCHAR(200) NOT NULL,
@@ -95,7 +93,6 @@ CREATE TABLE RetoExperimental (
 -- =========================================================
 CREATE TABLE Equipo (
   id            INT AUTO_INCREMENT PRIMARY KEY,
-  codigo        VARCHAR(50) NOT NULL UNIQUE,              
   nombre        VARCHAR(150) NOT NULL,
   hackathon_id  INT NOT NULL,
   created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
