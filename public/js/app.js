@@ -1,12 +1,14 @@
 Ext.onReady(() => {
     const estudiantePanel = createEstudiantePanel();
     const mentorTecnicoPanel = createMentorTecnicoPanel();
+   
 
     const mainCard = Ext.create('Ext.panel.Panel', {
         region: 'center',
         layout: 'card',
         items: [
-            estudiantePanel
+            estudiantePanel,
+            mentorTecnicoPanel
         ],
     });
 
@@ -29,7 +31,7 @@ Ext.onReady(() => {
                         handler: () => {
                             mainCard.getLayout().setActiveItem(mentorTecnicoPanel);
                         }
-                    }
+                    },
                 ],
             },
             mainCard,
