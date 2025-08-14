@@ -12,7 +12,7 @@ USE conjunta3p_db;
 -- =========================================================
 CREATE TABLE Hackathon (
   id            INT AUTO_INCREMENT PRIMARY KEY,
-  codigo        VARCHAR(50) NOT NULL UNIQUE,        -- ej: 'eduhack2025'
+  codigo        VARCHAR(50) NOT NULL UNIQUE,        
   nombre        VARCHAR(150) NOT NULL,
   fechaInicio   DATETIME NOT NULL,
   fechaFin      DATETIME NOT NULL,
@@ -27,21 +27,21 @@ CREATE TABLE Hackathon (
 -- =========================================================
 CREATE TABLE Participante (
   id                 INT AUTO_INCREMENT PRIMARY KEY,
-  codigo             VARCHAR(50) NOT NULL UNIQUE,   -- ej: 'estudiante_001', 'mentor_005' (para APIs)
+  codigo             VARCHAR(50) NOT NULL UNIQUE,  
   tipo               ENUM('ESTUDIANTE','MENTOR_TECNICO') NOT NULL,
   nombre             VARCHAR(150) NOT NULL,
   email              VARCHAR(200) NOT NULL UNIQUE,
   nivelHabilidad     ENUM('basico','intermedio','avanzado') NOT NULL,
-  habilidades        JSON NULL,                     -- ej: ["JavaScript","UI/UX","Python"]
+  habilidades        JSON NULL,                  
   created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 -- Estudiante (1:1 con Participante)
 CREATE TABLE Estudiante (
   id                        INT PRIMARY KEY,
-  grado                     VARCHAR(30) NOT NULL,         -- ej: "11"
+  grado                     VARCHAR(30) NOT NULL,         
   institucion               VARCHAR(150) NOT NULL,
-  tiempoDisponibleSemanal   INT NOT NULL,                 -- horas
+  tiempoDisponibleSemanal   INT NOT NULL,                
   CONSTRAINT fk_est_part FOREIGN KEY (id)
     REFERENCES Participante(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -50,8 +50,8 @@ CREATE TABLE Estudiante (
 CREATE TABLE MentorTecnico (
   id                    INT PRIMARY KEY,
   especialidad          VARCHAR(150) NOT NULL,
-  experiencia           INT NOT NULL,                     -- años
-  disponibilidadHoraria VARCHAR(150) NULL,                -- ej: "viernes y sábados"
+  experiencia           INT NOT NULL,                    
+  disponibilidadHoraria VARCHAR(150) NULL,                
   CONSTRAINT fk_ment_part FOREIGN KEY (id)
     REFERENCES Participante(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -61,13 +61,13 @@ CREATE TABLE MentorTecnico (
 -- =========================================================
 CREATE TABLE Reto (
   id                  INT AUTO_INCREMENT PRIMARY KEY,
-  codigo              VARCHAR(50) NOT NULL UNIQUE,        -- ej: 'reto_101'
-  hackathon_id        INT NULL,                           -- reto asociado a un evento (o NULL si es catálogo)
+  codigo              VARCHAR(50) NOT NULL UNIQUE,        
+  hackathon_id        INT NULL,                           
   tipo                ENUM('REAL','EXPERIMENTAL') NOT NULL,
   titulo              VARCHAR(200) NOT NULL,
   descripcion         TEXT NOT NULL,
   complejidad         ENUM('facil','media','dificil') NOT NULL,
-  areasConocimiento   JSON NULL,                          -- ej: ["Geolocalización","Mobile","Medioambiente"]
+  areasConocimiento   JSON NULL,                          
   estado              ENUM('ACTIVO','INACTIVO') NOT NULL DEFAULT 'ACTIVO',
   created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_reto_hack FOREIGN KEY (hackathon_id)
@@ -77,7 +77,7 @@ CREATE TABLE Reto (
 -- Reto Real (1:1 con Reto)
 CREATE TABLE RetoReal (
   id                   INT PRIMARY KEY,
-  entidadColaboradora  VARCHAR(200) NOT NULL,             -- ONG/empresa
+  entidadColaboradora  VARCHAR(200) NOT NULL,             
   CONSTRAINT fk_retoreal_reto FOREIGN KEY (id)
     REFERENCES Reto(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -85,7 +85,7 @@ CREATE TABLE RetoReal (
 -- Reto Experimental (1:1 con Reto)
 CREATE TABLE RetoExperimental (
   id                   INT PRIMARY KEY,
-  enfoquePedagogico    VARCHAR(100) NOT NULL,             -- ej: 'STEM','STEAM','ABP', etc.
+  enfoquePedagogico    VARCHAR(100) NOT NULL,            
   CONSTRAINT fk_retoexp_reto FOREIGN KEY (id)
     REFERENCES Reto(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -95,7 +95,7 @@ CREATE TABLE RetoExperimental (
 -- =========================================================
 CREATE TABLE Equipo (
   id            INT AUTO_INCREMENT PRIMARY KEY,
-  codigo        VARCHAR(50) NOT NULL UNIQUE,              -- ej: 'equipo_501'
+  codigo        VARCHAR(50) NOT NULL UNIQUE,              
   nombre        VARCHAR(150) NOT NULL,
   hackathon_id  INT NOT NULL,
   created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -120,7 +120,7 @@ CREATE TABLE EquipoReto (
   equipo_id     INT NOT NULL,
   reto_id       INT NOT NULL,
   estado        ENUM('pendiente','en_progreso','completado','abandonado') NOT NULL DEFAULT 'pendiente',
-  avance        TINYINT UNSIGNED NOT NULL DEFAULT 0,      -- 0..100 (%)
+  avance        TINYINT UNSIGNED NOT NULL DEFAULT 0,        
   asignado_en   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (equipo_id, reto_id),
   CONSTRAINT chk_avance_0_100 CHECK (avance BETWEEN 0 AND 100),
@@ -139,3 +139,5 @@ CREATE INDEX idx_reto_tipo                     ON Reto(tipo);
 CREATE INDEX idx_reto_hackathon                ON Reto(hackathon_id);
 CREATE INDEX idx_equipo_hackathon              ON Equipo(hackathon_id);
 CREATE INDEX idx_eqret_estado                  ON EquipoReto(estado);
+
+
