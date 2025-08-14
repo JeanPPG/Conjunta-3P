@@ -24,37 +24,37 @@ class EstudianteRepository implements RepositoryInterface
             throw new \InvalidArgumentException("Expected instance of Estudiante");
         }
 
-        $stmt = $this->db->prepare("CALL sp_create_estudiante(
+        $stmt = $this->db->prepare("CALL sp_crear_estudiante(
+            :id,
             :nombre,
             :email,
-            :nivelHabilidad,
+            :nivel_habilidad,
             :habilidades,
             :grado,
             :institucion,
-            :tiempoDisponibleSemanal
+            :tiempo_disponible
         )");
 
         $ok = $stmt->execute([
+            "id" => (string)$entity->getId(),
             "nombre" => $entity->getNombre(),
             "email" => $entity->getEmail(),
-            "nivelHabilidad" => $entity->getNivelHabilidad(),
+            "nivel_habilidad" => $entity->getNivelHabilidad(), // 'principiante'|'intermedio'|'avanzado'
             "habilidades" => json_encode($entity->getHabilidades(), JSON_UNESCAPED_UNICODE),
             "grado" => $entity->getGrado(),
-            "institucion" => $entity->getIntitucion(),
-            "tiempoDisponibleSemanal" => $entity->getTiempoDisponibleSemanal()
+            "institucion" => $entity->getIntitucion(), // <-- renombra a getInstitucion() en la entidad
+            "tiempo_disponible" => (int)$entity->getTiempoDisponibleSemanal() // <-- cambia a int en entidad
         ]);
 
-        if ($ok) {
-            $stmt->fetch(PDO::FETCH_ASSOC);
-        }
+        if ($ok) { $stmt->fetch(PDO::FETCH_ASSOC); }
         $stmt->closeCursor();
         return $ok;
     }
 
     public function findById(int $id): ?object
     {
-        $stmt = $this->db->prepare("CALL sp_find_estudiante(:id)");
-        $stmt->execute(["id" => $id]);
+        $stmt = $this->db->prepare("CALL sp_obtener_estudiante_por_id(:id)");
+        $stmt->execute(["id" => (string)$id]); // si cambias entidad a string, adapta la firma a string
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         $stmt->closeCursor();
 
@@ -67,46 +67,44 @@ class EstudianteRepository implements RepositoryInterface
             throw new \InvalidArgumentException("Expected instance of Estudiante");
         }
 
-        $stmt = $this->db->prepare("CALL sp_update_estudiante(
+        $stmt = $this->db->prepare("CALL sp_actualizar_estudiante(
             :id,
             :nombre,
             :email,
-            :nivelHabilidad,
+            :nivel_habilidad,
             :habilidades,
             :grado,
             :institucion,
-            :tiempoDisponibleSemanal
+            :tiempo_disponible
         )");
 
         $ok = $stmt->execute([
-            "id" => $entity->getId(),
+            "id" => (string)$entity->getId(),
             "nombre" => $entity->getNombre(),
             "email" => $entity->getEmail(),
-            "nivelHabilidad" => $entity->getNivelHabilidad(),
+            "nivel_habilidad" => $entity->getNivelHabilidad(),
             "habilidades" => json_encode($entity->getHabilidades(), JSON_UNESCAPED_UNICODE),
             "grado" => $entity->getGrado(),
             "institucion" => $entity->getIntitucion(),
-            "tiempoDisponibleSemanal" => $entity->getTiempoDisponibleSemanal()
+            "tiempo_disponible" => (int)$entity->getTiempoDisponibleSemanal()
         ]);
 
-        if ($ok) {
-            $stmt->fetch(PDO::FETCH_ASSOC);
-        }
+        if ($ok) { $stmt->fetch(PDO::FETCH_ASSOC); }
         $stmt->closeCursor();
         return $ok;
     }
 
     public function delete(int $id): bool
     {
-        $stmt = $this->db->prepare("CALL sp_delete_estudiante(:id)");
-        $ok = $stmt->execute(["id" => $id]);
+        $stmt = $this->db->prepare("CALL sp_eliminar_estudiante(:id)");
+        $ok = $stmt->execute(["id" => (string)$id]);
         $stmt->closeCursor();
         return $ok;
     }
 
     public function findAll(): array
     {
-        $stmt = $this->db->query("CALL sp_estudiante_list()");
+        $stmt = $this->db->query("CALL sp_listar_estudiantes()");
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $stmt->closeCursor();
 
@@ -120,14 +118,14 @@ class EstudianteRepository implements RepositoryInterface
     private function hydrate(array $row): Estudiante
     {
         return new Estudiante(
-            (int)$row['id'],
+            $row['id'],                      // <-- cambia entidad a string $id
             $row['nombre'],
             $row['email'],
-            $row['nivelHabilidad'],
+            $row['nivel_habilidad'],
             json_decode($row['habilidades'] ?? '[]', true),
             $row['grado'],
-            $row['institucion'],
-            $row['tiempoDisponibleSemanal']
+            $row['institucion'],                    // <-- corrige nombre en entidad (get/setInstitucion)
+            (string)$row['tiempo_disponible_semanal'] // <-- cambia en entidad a int; aquí puedes castear a int
         );
     }
 }

@@ -24,37 +24,37 @@ class MentorTecnicoRepository implements RepositoryInterface
             throw new \InvalidArgumentException("Expected instance of MentorTecnico");
         }
 
-        $stmt = $this->db->prepare("CALL sp_create_mentortecnico(
+        $stmt = $this->db->prepare("CALL sp_crear_mentor_tecnico(
+            :id,
             :nombre,
             :email,
-            :nivelHabilidad,
+            :nivel_habilidad,
             :habilidades,
             :especialidad,
             :experiencia,
-            :disponibilidadHoraria
+            :disponibilidad
         )");
 
         $ok = $stmt->execute([
+            "id" => (string)$entity->getId(),
             "nombre" => $entity->getNombre(),
             "email" => $entity->getEmail(),
-            "nivelHabilidad" => $entity->getNivelHabilidad(),
+            "nivel_habilidad" => $entity->getNivelHabilidad(),
             "habilidades" => json_encode($entity->getHabilidades(), JSON_UNESCAPED_UNICODE),
             "especialidad" => $entity->getEspecialidad(),
             "experiencia" => $entity->getExperiencia(),
-            "disponibilidadHoraria" => $entity->getDisponibilidadHoraria()
+            "disponibilidad" => $entity->getDisponibilidadHoraria()
         ]);
 
-        if ($ok) {
-            $stmt->fetch(PDO::FETCH_ASSOC);
-        }
+        if ($ok) { $stmt->fetch(PDO::FETCH_ASSOC); }
         $stmt->closeCursor();
         return $ok;
     }
 
     public function findById(int $id): ?object
     {
-        $stmt = $this->db->prepare("CALL sp_find_mentortecnico(:id)");
-        $stmt->execute(["id" => $id]);
+        $stmt = $this->db->prepare("CALL sp_obtener_mentor_por_id(:id)");
+        $stmt->execute(["id" => (string)$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         $stmt->closeCursor();
 
@@ -67,46 +67,44 @@ class MentorTecnicoRepository implements RepositoryInterface
             throw new \InvalidArgumentException("Expected instance of MentorTecnico");
         }
 
-        $stmt = $this->db->prepare("CALL sp_update_mentortecnico(
+        $stmt = $this->db->prepare("CALL sp_actualizar_mentor_tecnico(
             :id,
             :nombre,
             :email,
-            :nivelHabilidad,
+            :nivel_habilidad,
             :habilidades,
             :especialidad,
             :experiencia,
-            :disponibilidadHoraria
+            :disponibilidad
         )");
 
         $ok = $stmt->execute([
-            "id" => $entity->getId(),
+            "id" => (string)$entity->getId(),
             "nombre" => $entity->getNombre(),
             "email" => $entity->getEmail(),
-            "nivelHabilidad" => $entity->getNivelHabilidad(),
+            "nivel_habilidad" => $entity->getNivelHabilidad(),
             "habilidades" => json_encode($entity->getHabilidades(), JSON_UNESCAPED_UNICODE),
             "especialidad" => $entity->getEspecialidad(),
             "experiencia" => $entity->getExperiencia(),
-            "disponibilidadHoraria" => $entity->getDisponibilidadHoraria()
+            "disponibilidad" => $entity->getDisponibilidadHoraria()
         ]);
 
-        if ($ok) {
-            $stmt->fetch(PDO::FETCH_ASSOC);
-        }
+        if ($ok) { $stmt->fetch(PDO::FETCH_ASSOC); }
         $stmt->closeCursor();
         return $ok;
     }
 
     public function delete(int $id): bool
     {
-        $stmt = $this->db->prepare("CALL sp_delete_mentortecnico(:id)");
-        $ok = $stmt->execute(["id" => $id]);
+        $stmt = $this->db->prepare("CALL sp_eliminar_mentor_tecnico(:id)");
+        $ok = $stmt->execute(["id" => (string)$id]);
         $stmt->closeCursor();
         return $ok;
     }
 
     public function findAll(): array
     {
-        $stmt = $this->db->query("CALL sp_mentortecnico_list()");
+        $stmt = $this->db->query("CALL sp_listar_mentores()");
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $stmt->closeCursor();
 
@@ -120,14 +118,14 @@ class MentorTecnicoRepository implements RepositoryInterface
     private function hydrate(array $row): MentorTecnico
     {
         return new MentorTecnico(
-            (int)$row['id'],
+            $row['id'],
             $row['nombre'],
             $row['email'],
-            $row['nivelHabilidad'],
+            $row['nivel_habilidad'],
             json_decode($row['habilidades'] ?? '[]', true),
             $row['especialidad'],
-            (int)$row['experiencia'],
-            $row['disponibilidadHoraria']
+            (int)$row['experiencia_anos'],
+            $row['disponibilidad_horaria']
         );
     }
 }

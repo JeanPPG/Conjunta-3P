@@ -24,33 +24,33 @@ class RetoExperimentalRepository implements RepositoryInterface
             throw new \InvalidArgumentException("Expected instance of RetoExperimental");
         }
 
-        $stmt = $this->db->prepare("CALL sp_create_retoexperimental(
+        $stmt = $this->db->prepare("CALL sp_crear_reto_experimental(
+            :id,
             :titulo,
             :descripcion,
             :complejidad,
-            :areasConocimiento,
-            :enfoquePedagogico
+            :areas_conocimiento,
+            :enfoque_pedagogico
         )");
 
         $ok = $stmt->execute([
+            "id" => (string)$entity->getId(),
             "titulo" => $entity->getTitulo(),
             "descripcion" => $entity->getDescripcion(),
             "complejidad" => $entity->getComplejidad(),
-            "areasConocimiento" => json_encode($entity->getAreasConocimiento(), JSON_UNESCAPED_UNICODE),
-            "enfoquePedagogico" => $entity->getEnfoquePedagogico()
+            "areas_conocimiento" => json_encode($entity->getAreasConocimiento(), JSON_UNESCAPED_UNICODE),
+            "enfoque_pedagogico" => $entity->getEnfoquePedagogico()
         ]);
 
-        if ($ok) {
-            $stmt->fetch(PDO::FETCH_ASSOC);
-        }
+        if ($ok) { $stmt->fetch(PDO::FETCH_ASSOC); }
         $stmt->closeCursor();
         return $ok;
     }
 
     public function findById(int $id): ?object
     {
-        $stmt = $this->db->prepare("CALL sp_find_retoexperimental(:id)");
-        $stmt->execute(["id" => $id]);
+        $stmt = $this->db->prepare("CALL sp_obtener_reto_experimental_por_id(:id)");
+        $stmt->execute(["id" => (string)$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         $stmt->closeCursor();
 
@@ -63,42 +63,40 @@ class RetoExperimentalRepository implements RepositoryInterface
             throw new \InvalidArgumentException("Expected instance of RetoExperimental");
         }
 
-        $stmt = $this->db->prepare("CALL sp_update_retoexperimental(
+        $stmt = $this->db->prepare("CALL sp_actualizar_reto_experimental(
             :id,
             :titulo,
             :descripcion,
             :complejidad,
-            :areasConocimiento,
-            :enfoquePedagogico
+            :areas_conocimiento,
+            :enfoque_pedagogico
         )");
 
         $ok = $stmt->execute([
-            "id" => $entity->getId(),
+            "id" => (string)$entity->getId(),
             "titulo" => $entity->getTitulo(),
             "descripcion" => $entity->getDescripcion(),
             "complejidad" => $entity->getComplejidad(),
-            "areasConocimiento" => json_encode($entity->getAreasConocimiento(), JSON_UNESCAPED_UNICODE),
-            "enfoquePedagogico" => $entity->getEnfoquePedagogico()
+            "areas_conocimiento" => json_encode($entity->getAreasConocimiento(), JSON_UNESCAPED_UNICODE),
+            "enfoque_pedagogico" => $entity->getEnfoquePedagogico()
         ]);
 
-        if ($ok) {
-            $stmt->fetch(PDO::FETCH_ASSOC);
-        }
+        if ($ok) { $stmt->fetch(PDO::FETCH_ASSOC); }
         $stmt->closeCursor();
         return $ok;
     }
 
     public function delete(int $id): bool
     {
-        $stmt = $this->db->prepare("CALL sp_delete_retoexperimental(:id)");
-        $ok = $stmt->execute(["id" => $id]);
+        $stmt = $this->db->prepare("CALL sp_eliminar_reto_experimental(:id)");
+        $ok = $stmt->execute(["id" => (string)$id]);
         $stmt->closeCursor();
         return $ok;
     }
 
     public function findAll(): array
     {
-        $stmt = $this->db->query("CALL sp_retoexperimental_list()");
+        $stmt = $this->db->query("CALL sp_listar_retos_experimentales()");
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $stmt->closeCursor();
 
@@ -112,12 +110,12 @@ class RetoExperimentalRepository implements RepositoryInterface
     private function hydrate(array $row): RetoExperimental
     {
         return new RetoExperimental(
-            (int)$row['id'],
+            $row['id'],
             $row['titulo'],
             $row['descripcion'],
             $row['complejidad'],
-            json_decode($row['areasConocimiento'] ?? '[]', true),
-            $row['enfoquePedagogico']
+            json_decode($row['areas_conocimiento'] ?? '[]', true),
+            $row['enfoque_pedagogico']
         );
     }
 }

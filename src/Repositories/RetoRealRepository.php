@@ -24,33 +24,33 @@ class RetoRealRepository implements RepositoryInterface
             throw new \InvalidArgumentException("Expected instance of RetoReal");
         }
 
-        $stmt = $this->db->prepare("CALL sp_create_retoreal(
+        $stmt = $this->db->prepare("CALL sp_crear_reto_real(
+            :id,
             :titulo,
             :descripcion,
             :complejidad,
-            :areasConocimiento,
-            :entidadColaboradora
+            :areas_conocimiento,
+            :entidad_colaboradora
         )");
 
         $ok = $stmt->execute([
+            "id" => (string)$entity->getId(),
             "titulo" => $entity->getTitulo(),
             "descripcion" => $entity->getDescripcion(),
             "complejidad" => $entity->getComplejidad(),
-            "areasConocimiento" => json_encode($entity->getAreasConocimiento(), JSON_UNESCAPED_UNICODE),
-            "entidadColaboradora" => $entity->getEntidadColaboradora()
+            "areas_conocimiento" => json_encode($entity->getAreasConocimiento(), JSON_UNESCAPED_UNICODE),
+            "entidad_colaboradora" => $entity->getEntidadColaboradora()
         ]);
 
-        if ($ok) {
-            $stmt->fetch(PDO::FETCH_ASSOC);
-        }
+        if ($ok) { $stmt->fetch(PDO::FETCH_ASSOC); }
         $stmt->closeCursor();
         return $ok;
     }
 
     public function findById(int $id): ?object
     {
-        $stmt = $this->db->prepare("CALL sp_find_retoreal(:id)");
-        $stmt->execute(["id" => $id]);
+        $stmt = $this->db->prepare("CALL sp_obtener_reto_real_por_id(:id)");
+        $stmt->execute(["id" => (string)$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         $stmt->closeCursor();
 
@@ -63,42 +63,40 @@ class RetoRealRepository implements RepositoryInterface
             throw new \InvalidArgumentException("Expected instance of RetoReal");
         }
 
-        $stmt = $this->db->prepare("CALL sp_update_retoreal(
+        $stmt = $this->db->prepare("CALL sp_actualizar_reto_real(
             :id,
             :titulo,
             :descripcion,
             :complejidad,
-            :areasConocimiento,
-            :entidadColaboradora
+            :areas_conocimiento,
+            :entidad_colaboradora
         )");
 
         $ok = $stmt->execute([
-            "id" => $entity->getId(),
+            "id" => (string)$entity->getId(),
             "titulo" => $entity->getTitulo(),
             "descripcion" => $entity->getDescripcion(),
             "complejidad" => $entity->getComplejidad(),
-            "areasConocimiento" => json_encode($entity->getAreasConocimiento(), JSON_UNESCAPED_UNICODE),
-            "entidadColaboradora" => $entity->getEntidadColaboradora()
+            "areas_conocimiento" => json_encode($entity->getAreasConocimiento(), JSON_UNESCAPED_UNICODE),
+            "entidad_colaboradora" => $entity->getEntidadColaboradora()
         ]);
 
-        if ($ok) {
-            $stmt->fetch(PDO::FETCH_ASSOC);
-        }
+        if ($ok) { $stmt->fetch(PDO::FETCH_ASSOC); }
         $stmt->closeCursor();
         return $ok;
     }
 
     public function delete(int $id): bool
     {
-        $stmt = $this->db->prepare("CALL sp_delete_retoreal(:id)");
-        $ok = $stmt->execute(["id" => $id]);
+        $stmt = $this->db->prepare("CALL sp_eliminar_reto_real(:id)");
+        $ok = $stmt->execute(["id" => (string)$id]);
         $stmt->closeCursor();
         return $ok;
     }
 
     public function findAll(): array
     {
-        $stmt = $this->db->query("CALL sp_retoreal_list()");
+        $stmt = $this->db->query("CALL sp_listar_retos_reales()");
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $stmt->closeCursor();
 
@@ -112,12 +110,12 @@ class RetoRealRepository implements RepositoryInterface
     private function hydrate(array $row): RetoReal
     {
         return new RetoReal(
-            (int)$row['id'],
+            $row['id'],
             $row['titulo'],
             $row['descripcion'],
             $row['complejidad'],
-            json_decode($row['areasConocimiento'] ?? '[]', true),
-            $row['entidadColaboradora']
+            json_decode($row['areas_conocimiento'] ?? '[]', true),
+            $row['entidad_colaboradora']
         );
     }
 }
