@@ -1,24 +1,22 @@
-const createMentorTecnicoPanel = () => {
-    Ext.define('App.model.MentorTecnico',{
+const createRetoRealPanel = () => {
+    Ext.define('App.model.RetoReal', {
         extend: 'Ext.data.Model',
         fields: [
             { name: 'id', type: 'int' },
-            { name: 'nombre', type: 'string' },
-            { name: 'email', type: 'string' },
-            { name: 'nivel_habilidad', type: 'string' },
-            { name: 'habilidades', type: 'auto' },
-            { name: 'especialidad', type: 'string' },
-            { name: 'experiencia', type: 'int' },
-            { name: 'disponibilidad_horaria', type: 'string' }
+            { name: 'titulo', type: 'string' },
+            { name: 'descripcion', type: 'string' },
+            { name: 'complejidad', type: 'string' },            // 'facil' | 'media' | 'dificil'
+            { name: 'areas_conocimiento', type: 'auto' },       // Array / JSON
+            { name: 'entidad_colaboradora', type: 'string' }
         ]
     });
 
-    const mentorTecnicoStore = Ext.create('Ext.data.Store', {
-        storeId: 'mentorTecnicoStore',
-        model: 'App.model.MentorTecnico',
+    const retoRealStore = Ext.create('Ext.data.Store', {
+        storeId: 'retoRealStore',
+        model: 'App.model.RetoReal',
         proxy: {
             type: 'rest',
-            url: '/api/mentortecnico.php',
+            url: '/api/retos_reales.php', // endpoint del controlador de Reto Real
             reader: {
                 type: 'json',
                 rootProperty: ''
@@ -33,18 +31,25 @@ const createMentorTecnicoPanel = () => {
         autoSync: false
     });
 
+    const renderAreas = (value) => {
+        if (!value) return '';
+        let arr = value;
+        if (Ext.isString(value)) {
+            try { arr = JSON.parse(value); } catch (e) { return value; }
+        }
+        return Ext.isArray(arr) ? arr.join(', ') : value;
+    };
+
     return Ext.create('Ext.grid.Panel', {
-        title: 'Mentores Técnicos',
-        store: mentorTecnicoStore,
+        title: 'Retos Reales',
+        store: retoRealStore,
         columns: [
-            { text: 'ID', dataIndex: 'id', flex: 1 },
-            { text: 'Nombre', dataIndex: 'nombre', flex: 2 },
-            { text: 'Email', dataIndex: 'email', flex: 2 },
-            { text: 'Nivel de Habilidad', dataIndex: 'nivel_habilidad', flex: 1 },
-            { text: 'Habilidades', dataIndex: 'habilidades', flex: 2 },
-            { text: 'Especialidad', dataIndex: 'especialidad', flex: 1 },
-            { text: 'Años de Experiencia', dataIndex: 'experiencia', flex: 1 },
-            { text: 'Disponibilidad Horaria', dataIndex: 'disponibilidad_horaria', flex: 2 }
+            { text: 'ID', dataIndex: 'id', width: 80 },
+            { text: 'Título', dataIndex: 'titulo', flex: 2 },
+            { text: 'Descripción', dataIndex: 'descripcion', flex: 3 },
+            { text: 'Complejidad', dataIndex: 'complejidad', width: 120 },
+            { text: 'Áreas de Conocimiento', dataIndex: 'areas_conocimiento', flex: 2, renderer: renderAreas },
+            { text: 'Entidad Colaboradora', dataIndex: 'entidad_colaboradora', width: 220 }
         ]
     });
-}
+};
