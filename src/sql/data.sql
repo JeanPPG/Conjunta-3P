@@ -1,114 +1,919 @@
-USE conjunta3p_db;
+# Base de Datos EduHack - Diseño Table Per Type (TPT)
 
--- =========================================================
--- 1) Hackathon
--- =========================================================
-INSERT INTO Hackathon (codigo, nombre, fechaInicio, fechaFin, modalidad, lugar, estado)
-VALUES
-('eduhack2025', 'EduHack Sostenibilidad 2025', '2025-04-15 09:00:00', '2025-04-16 18:00:00', 'HIBRIDO', 'Plataforma online + sedes presenciales', 'EN_CURSO');
+## 1. Tablas Base (Abstractas)
 
--- =========================================================
--- 2) Participantes (padre)
--- =========================================================
-INSERT INTO Participante (codigo, tipo, nombre, email, nivelHabilidad, habilidades)
-VALUES
-('estudiante_001', 'ESTUDIANTE', 'Lucía Mendoza', 'lucia.mendoza@estudiante.edu', 'intermedio',
- JSON_ARRAY('JavaScript','UI/UX','Python')),
-('estudiante_002', 'ESTUDIANTE', 'Juan Torres', 'juan.torres@estudiante.edu', 'basico',
- JSON_ARRAY('HTML','CSS','Diseño Gráfico')),
-('mentor_005', 'MENTOR_TECNICO', 'Dr. Carlos Rivas', 'carlos.rivas@mentor.edu', 'avanzado',
- JSON_ARRAY('Inteligencia Artificial','Machine Learning','Data Science'));
+### Tabla: participantes (Base)
+```sql
+CREATE TABLE participantes (
+    id VARCHAR(50) PRIMARY KEY,
+    tipo ENUM('estudiante', 'mentorTecnico') NOT NULL,
+    nombre VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    nivel_habilidad ENUM('principiante', 'intermedio', 'avanzado') NOT NULL,
+    habilidades JSON NOT NULL, -- Array de habilidades
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
 
--- =========================================================
--- 3) Estudiantes y Mentor Técnico (subtipos)
--- =========================================================
--- OJO: Los IDs se generan AUTO_INCREMENT, necesitamos saberlos
--- Aquí asumo que fueron generados en orden 1, 2, 3
-INSERT INTO Estudiante (id, grado, institucion, tiempoDisponibleSemanal)
-VALUES
-(1, '11', 'Colegio Innovación Futuro', 20),
-(2, '10', 'Colegio Creativo Global', 15);
+### Tabla: retos (Base)
 
-INSERT INTO MentorTecnico (id, especialidad, experiencia, disponibilidadHoraria)
-VALUES
-(3, 'Inteligencia Artificial', 8, 'viernes y sábados');
+CREATE TABLE retos (
+    id VARCHAR(50) PRIMARY KEY,
+    tipo ENUM('retoReal', 'retoExperimental') NOT NULL,
+    titulo VARCHAR(255) NOT NULL,
+    descripcion TEXT NOT NULL,
+    complejidad ENUM('facil', 'media', 'dificil') NOT NULL,
+    areas_conocimiento JSON NOT NULL, -- Array de áreas
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
 
--- =========================================================
--- 4) Retos (padre)
--- =========================================================
-INSERT INTO Reto (codigo, hackathon_id, tipo, titulo, descripcion, complejidad, areasConocimiento, estado)
-VALUES
-('reto_101', 1, 'REAL', 'App para monitoreo de basureros ilegales',
- 'Desarrollar una app móvil que permita reportar y geolocalizar basureros ilegales.',
- 'dificil', JSON_ARRAY('Geolocalización','Mobile','Medioambiente'), 'ACTIVO'),
-('reto_102', 1, 'EXPERIMENTAL', 'Simulador de ecosistemas con IA generativa',
- 'Usar IA para modelar cómo cambia un ecosistema ante cambios climáticos.',
- 'media', JSON_ARRAY('IA generativa','Ecología','Simulación'), 'ACTIVO');
 
--- =========================================================
--- 5) Subtipos de Retos
--- =========================================================
-INSERT INTO RetoReal (id, entidadColaboradora)
-VALUES
-(1, 'GreenEarth ONG');
+## 2. Tablas Específicas de Participantes
 
-INSERT INTO RetoExperimental (id, enfoquePedagogico)
-VALUES
-(2, 'ABP (Aprendizaje Basado en Proyectos)');
+### Tabla: estudiantes
 
--- =========================================================
--- 6) Equipos
--- =========================================================
-INSERT INTO Equipo (codigo, nombre, hackathon_id)
-VALUES
-('equipo_501', 'EcoHackers', 1);
+CREATE TABLE estudiantes (
+    participante_id VARCHAR(50) PRIMARY KEY,
+    grado VARCHAR(10) NOT NULL,
+    institucion VARCHAR(255) NOT NULL,
+    tiempo_disponible_semanal INT NOT NULL,
+    
+    FOREIGN KEY (participante_id) REFERENCES participantes(id) ON DELETE CASCADE
+);
 
--- =========================================================
--- 7) EquipoParticipante (M:N)
--- =========================================================
-INSERT INTO EquipoParticipante (equipo_id, participante_id, rol)
-VALUES
-(1, 1, 'ESTUDIANTE'),   -- Lucía
-(1, 2, 'ESTUDIANTE'),   -- Juan
-(1, 3, 'MENTOR_TECNICO'); -- Dr. Carlos
 
--- =========================================================
--- 8) EquipoReto (M:N con estado)
--- =========================================================
-INSERT INTO EquipoReto (equipo_id, reto_id, estado, avance)
-VALUES
-(1, 1, 'en_progreso', 40),  -- App monitoreo basureros
-(1, 2, 'en_progreso', 20);  -- Simulador IA generativa
+### Tabla: mentores_tecnicos
 
--- =========================================================
--- 9) Otro equipo para ejemplo de "retos populares"
--- =========================================================
-INSERT INTO Equipo (codigo, nombre, hackathon_id)
-VALUES
-('equipo_503', 'CodeVerde', 1);
+CREATE TABLE mentores_tecnicos (
+    participante_id VARCHAR(50) PRIMARY KEY,
+    especialidad VARCHAR(255) NOT NULL,
+    experiencia_anos INT NOT NULL,
+    disponibilidad_horaria VARCHAR(255) NOT NULL,
+    
+    FOREIGN KEY (participante_id) REFERENCES participantes(id) ON DELETE CASCADE
+);
 
--- Participantes ficticios para el segundo equipo
-INSERT INTO Participante (codigo, tipo, nombre, email, nivelHabilidad, habilidades)
-VALUES
-('estudiante_003', 'ESTUDIANTE', 'María López', 'maria.lopez@estudiante.edu', 'intermedio',
- JSON_ARRAY('Python','Data Analysis')),
-('mentor_006', 'MENTOR_TECNICO', 'Ing. Roberto Pérez', 'roberto.perez@mentor.edu', 'avanzado',
- JSON_ARRAY('Cloud Computing','IoT')) ;
 
-INSERT INTO Estudiante (id, grado, institucion, tiempoDisponibleSemanal)
-VALUES
-(4, '12', 'Unidad Educativa Horizonte', 25);
+## 3. Tablas Específicas de Retos
 
-INSERT INTO MentorTecnico (id, especialidad, experiencia, disponibilidadHoraria)
-VALUES
-(5, 'Internet de las Cosas', 5, 'fines de semana');
+### Tabla: retos_reales
 
-INSERT INTO EquipoParticipante (equipo_id, participante_id, rol)
-VALUES
-(2, 4, 'ESTUDIANTE'),
-(2, 5, 'MENTOR_TECNICO');
+CREATE TABLE retos_reales (
+    reto_id VARCHAR(50) PRIMARY KEY,
+    entidad_colaboradora VARCHAR(255) NOT NULL,
+    
+    FOREIGN KEY (reto_id) REFERENCES retos(id) ON DELETE CASCADE
+);
 
--- Asignación de un reto al segundo equipo
-INSERT INTO EquipoReto (equipo_id, reto_id, estado, avance)
-VALUES
-(2, 1, 'en_progreso', 10); -- App monitoreo basureros
+
+### Tabla: retos_experimentales
+
+CREATE TABLE retos_experimentales (
+    reto_id VARCHAR(50) PRIMARY KEY,
+    enfoque_pedagogico VARCHAR(255) NOT NULL,
+    
+    FOREIGN KEY (reto_id) REFERENCES retos(id) ON DELETE CASCADE
+);
+
+
+## 4. Tablas de Hackathons y Equipos
+
+### Tabla: hackathons
+
+CREATE TABLE hackathons (
+    id VARCHAR(50) PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    descripcion TEXT,
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE NOT NULL,
+    lugar VARCHAR(255),
+    estado ENUM('planificado', 'activo', 'finalizado') DEFAULT 'planificado',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+### Tabla: equipos
+
+CREATE TABLE equipos (
+    id VARCHAR(50) PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    hackathon_id VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (hackathon_id) REFERENCES hackathons(id) ON DELETE CASCADE
+);
+
+
+## 5. Tablas de Relación (Muchos a Muchos)
+
+### Tabla: equipo_participantes
+
+CREATE TABLE equipo_participantes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    equipo_id VARCHAR(50) NOT NULL,
+    participante_id VARCHAR(50) NOT NULL,
+    rol_en_equipo VARCHAR(100) NOT NULL, -- 'lider', 'desarrollador', 'mentor', etc.
+    fecha_union TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (equipo_id) REFERENCES equipos(id) ON DELETE CASCADE,
+    FOREIGN KEY (participante_id) REFERENCES participantes(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_equipo_participante (equipo_id, participante_id)
+);
+
+
+### Tabla: equipo_retos (Relación Muchos a Muchos Principal)
+
+CREATE TABLE equipo_retos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    equipo_id VARCHAR(50) NOT NULL,
+    reto_id VARCHAR(50) NOT NULL,
+    estado ENUM('asignado', 'en_progreso', 'completado', 'abandonado') DEFAULT 'asignado',
+    fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_completion TIMESTAMP NULL,
+    progreso_porcentaje INT DEFAULT 0 CHECK (progreso_porcentaje BETWEEN 0 AND 100),
+    notas TEXT,
+    
+    FOREIGN KEY (equipo_id) REFERENCES equipos(id) ON DELETE CASCADE,
+    FOREIGN KEY (reto_id) REFERENCES retos(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_equipo_reto (equipo_id, reto_id)
+);
+
+
+## 6. Triggers para Integridad de Herencia
+
+### Trigger para validar tipo de participante
+
+DELIMITER $$
+
+CREATE TRIGGER validate_estudiante_insert
+BEFORE INSERT ON estudiantes
+FOR EACH ROW
+BEGIN
+    DECLARE participant_type VARCHAR(50);
+    SELECT tipo INTO participant_type FROM participantes WHERE id = NEW.participante_id;
+    IF participant_type != 'estudiante' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Solo participantes tipo estudiante pueden insertarse en tabla estudiantes';
+    END IF;
+END$$
+
+CREATE TRIGGER validate_mentor_insert
+BEFORE INSERT ON mentores_tecnicos
+FOR EACH ROW
+BEGIN
+    DECLARE participant_type VARCHAR(50);
+    SELECT tipo INTO participant_type FROM participantes WHERE id = NEW.participante_id;
+    IF participant_type != 'mentorTecnico' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Solo participantes tipo mentorTecnico pueden insertarse en tabla mentores_tecnicos';
+    END IF;
+END$$
+
+DELIMITER ;
+
+
+### Trigger para validar tipo de reto
+
+DELIMITER $$
+
+CREATE TRIGGER validate_reto_real_insert
+BEFORE INSERT ON retos_reales
+FOR EACH ROW
+BEGIN
+    DECLARE challenge_type VARCHAR(50);
+    SELECT tipo INTO challenge_type FROM retos WHERE id = NEW.reto_id;
+    IF challenge_type != 'retoReal' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Solo retos tipo retoReal pueden insertarse en tabla retos_reales';
+    END IF;
+END$$
+
+CREATE TRIGGER validate_reto_experimental_insert
+BEFORE INSERT ON retos_experimentales
+FOR EACH ROW
+BEGIN
+    DECLARE challenge_type VARCHAR(50);
+    SELECT tipo INTO challenge_type FROM retos WHERE id = NEW.reto_id;
+    IF challenge_type != 'retoExperimental' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Solo retos tipo retoExperimental pueden insertarse en tabla retos_experimentales';
+    END IF;
+END$$
+
+DELIMITER ;
+
+## 7. Índices para Optimización
+
+
+CREATE INDEX idx_participantes_tipo ON participantes(tipo);
+CREATE INDEX idx_participantes_email ON participantes(email);
+CREATE INDEX idx_participantes_nivel ON participantes(nivel_habilidad);
+
+CREATE INDEX idx_retos_tipo ON retos(tipo);
+CREATE INDEX idx_retos_complejidad ON retos(complejidad);
+
+-- Índices en tablas específicas
+CREATE INDEX idx_estudiantes_grado ON estudiantes(grado);
+CREATE INDEX idx_estudiantes_institucion ON estudiantes(institucion);
+CREATE INDEX idx_mentores_especialidad ON mentores_tecnicos(especialidad);
+
+-- Índices en relaciones
+CREATE INDEX idx_equipo_participantes_equipo ON equipo_participantes(equipo_id);
+CREATE INDEX idx_equipo_participantes_participante ON equipo_participantes(participante_id);
+CREATE INDEX idx_equipo_retos_equipo ON equipo_retos(equipo_id);
+CREATE INDEX idx_equipo_retos_reto ON equipo_retos(reto_id);
+CREATE INDEX idx_equipo_retos_estado ON equipo_retos(estado);
+
+
+-- =====================================================
+-- PROCEDIMIENTOS CRUD - SISTEMA EDUHACK
+-- =====================================================
+
+DELIMITER $$
+
+-- =====================================================
+-- PARTICIPANTES - ESTUDIANTES
+-- =====================================================
+
+-- CREATE: Crear estudiante completo
+CREATE PROCEDURE sp_crear_estudiante(
+    IN p_id VARCHAR(50),
+    IN p_nombre VARCHAR(255),
+    IN p_email VARCHAR(255),
+    IN p_nivel_habilidad VARCHAR(50),
+    IN p_habilidades JSON,
+    IN p_grado VARCHAR(10),
+    IN p_institucion VARCHAR(255),
+    IN p_tiempo_disponible INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+    
+    START TRANSACTION;
+    
+    INSERT INTO participantes (id, tipo, nombre, email, nivel_habilidad, habilidades)
+    VALUES (p_id, 'estudiante', p_nombre, p_email, p_nivel_habilidad, p_habilidades);
+    
+    INSERT INTO estudiantes (participante_id, grado, institucion, tiempo_disponible_semanal)
+    VALUES (p_id, p_grado, p_institucion, p_tiempo_disponible);
+    
+    COMMIT;
+    
+    SELECT 'Estudiante creado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- READ: Obtener estudiante por ID
+CREATE PROCEDURE sp_obtener_estudiante_por_id(
+    IN p_id VARCHAR(50)
+)
+BEGIN
+    SELECT 
+        p.id, p.tipo, p.nombre, p.email, p.nivel_habilidad, p.habilidades,
+        p.created_at, p.updated_at,
+        e.grado, e.institucion, e.tiempo_disponible_semanal
+    FROM participantes p
+    INNER JOIN estudiantes e ON p.id = e.participante_id
+    WHERE p.id = p_id AND p.tipo = 'estudiante';
+END$$
+
+-- READ: Listar todos los estudiantes
+CREATE PROCEDURE sp_listar_estudiantes()
+BEGIN
+    SELECT 
+        p.id, p.tipo, p.nombre, p.email, p.nivel_habilidad, p.habilidades,
+        p.created_at, p.updated_at,
+        e.grado, e.institucion, e.tiempo_disponible_semanal
+    FROM participantes p
+    INNER JOIN estudiantes e ON p.id = e.participante_id
+    WHERE p.tipo = 'estudiante'
+    ORDER BY p.nombre;
+END$$
+
+-- UPDATE: Actualizar estudiante
+CREATE PROCEDURE sp_actualizar_estudiante(
+    IN p_id VARCHAR(50),
+    IN p_nombre VARCHAR(255),
+    IN p_email VARCHAR(255),
+    IN p_nivel_habilidad VARCHAR(50),
+    IN p_habilidades JSON,
+    IN p_grado VARCHAR(10),
+    IN p_institucion VARCHAR(255),
+    IN p_tiempo_disponible INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+    
+    START TRANSACTION;
+    
+    UPDATE participantes 
+    SET nombre = p_nombre, 
+        email = p_email, 
+        nivel_habilidad = p_nivel_habilidad,
+        habilidades = p_habilidades,
+        updated_at = NOW()
+    WHERE id = p_id AND tipo = 'estudiante';
+    
+    UPDATE estudiantes 
+    SET grado = p_grado,
+        institucion = p_institucion,
+        tiempo_disponible_semanal = p_tiempo_disponible
+    WHERE participante_id = p_id;
+    
+    COMMIT;
+    
+    SELECT 'Estudiante actualizado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- DELETE: Eliminar estudiante
+CREATE PROCEDURE sp_eliminar_estudiante(
+    IN p_id VARCHAR(50)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+    
+    START TRANSACTION;
+    
+    -- Las foreign keys CASCADE eliminarán automáticamente de estudiantes
+    DELETE FROM participantes WHERE id = p_id AND tipo = 'estudiante';
+    
+    COMMIT;
+    
+    SELECT 'Estudiante eliminado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- =====================================================
+-- PARTICIPANTES - MENTORES TECNICOS
+-- =====================================================
+
+-- CREATE: Crear mentor técnico completo
+CREATE PROCEDURE sp_crear_mentor_tecnico(
+    IN p_id VARCHAR(50),
+    IN p_nombre VARCHAR(255),
+    IN p_email VARCHAR(255),
+    IN p_nivel_habilidad VARCHAR(50),
+    IN p_habilidades JSON,
+    IN p_especialidad VARCHAR(255),
+    IN p_experiencia INT,
+    IN p_disponibilidad VARCHAR(255)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+    
+    START TRANSACTION;
+    
+    INSERT INTO participantes (id, tipo, nombre, email, nivel_habilidad, habilidades)
+    VALUES (p_id, 'mentorTecnico', p_nombre, p_email, p_nivel_habilidad, p_habilidades);
+    
+    INSERT INTO mentores_tecnicos (participante_id, especialidad, experiencia_anos, disponibilidad_horaria)
+    VALUES (p_id, p_especialidad, p_experiencia, p_disponibilidad);
+    
+    COMMIT;
+    
+    SELECT 'Mentor técnico creado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- READ: Obtener mentor por ID
+CREATE PROCEDURE sp_obtener_mentor_por_id(
+    IN p_id VARCHAR(50)
+)
+BEGIN
+    SELECT 
+        p.id, p.tipo, p.nombre, p.email, p.nivel_habilidad, p.habilidades,
+        p.created_at, p.updated_at,
+        mt.especialidad, mt.experiencia_anos, mt.disponibilidad_horaria
+    FROM participantes p
+    INNER JOIN mentores_tecnicos mt ON p.id = mt.participante_id
+    WHERE p.id = p_id AND p.tipo = 'mentorTecnico';
+END$$
+
+-- READ: Listar todos los mentores
+CREATE PROCEDURE sp_listar_mentores()
+BEGIN
+    SELECT 
+        p.id, p.tipo, p.nombre, p.email, p.nivel_habilidad, p.habilidades,
+        p.created_at, p.updated_at,
+        mt.especialidad, mt.experiencia_anos, mt.disponibilidad_horaria
+    FROM participantes p
+    INNER JOIN mentores_tecnicos mt ON p.id = mt.participante_id
+    WHERE p.tipo = 'mentorTecnico'
+    ORDER BY p.nombre;
+END$$
+
+-- UPDATE: Actualizar mentor
+CREATE PROCEDURE sp_actualizar_mentor_tecnico(
+    IN p_id VARCHAR(50),
+    IN p_nombre VARCHAR(255),
+    IN p_email VARCHAR(255),
+    IN p_nivel_habilidad VARCHAR(50),
+    IN p_habilidades JSON,
+    IN p_especialidad VARCHAR(255),
+    IN p_experiencia INT,
+    IN p_disponibilidad VARCHAR(255)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+    
+    START TRANSACTION;
+    
+    UPDATE participantes 
+    SET nombre = p_nombre, 
+        email = p_email, 
+        nivel_habilidad = p_nivel_habilidad,
+        habilidades = p_habilidades,
+        updated_at = NOW()
+    WHERE id = p_id AND tipo = 'mentorTecnico';
+    
+    UPDATE mentores_tecnicos 
+    SET especialidad = p_especialidad,
+        experiencia_anos = p_experiencia,
+        disponibilidad_horaria = p_disponibilidad
+    WHERE participante_id = p_id;
+    
+    COMMIT;
+    
+    SELECT 'Mentor técnico actualizado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- DELETE: Eliminar mentor
+CREATE PROCEDURE sp_eliminar_mentor_tecnico(
+    IN p_id VARCHAR(50)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+    
+    START TRANSACTION;
+    
+    -- Las foreign keys CASCADE eliminarán automáticamente de mentores_tecnicos
+    DELETE FROM participantes WHERE id = p_id AND tipo = 'mentorTecnico';
+    
+    COMMIT;
+    
+    SELECT 'Mentor técnico eliminado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- =====================================================
+-- RETOS REALES
+-- =====================================================
+
+-- CREATE: Crear reto real completo
+CREATE PROCEDURE sp_crear_reto_real(
+    IN p_id VARCHAR(50),
+    IN p_titulo VARCHAR(255),
+    IN p_descripcion TEXT,
+    IN p_complejidad VARCHAR(50),
+    IN p_areas_conocimiento JSON,
+    IN p_entidad_colaboradora VARCHAR(255)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+    
+    START TRANSACTION;
+    
+    INSERT INTO retos (id, tipo, titulo, descripcion, complejidad, areas_conocimiento)
+    VALUES (p_id, 'retoReal', p_titulo, p_descripcion, p_complejidad, p_areas_conocimiento);
+    
+    INSERT INTO retos_reales (reto_id, entidad_colaboradora)
+    VALUES (p_id, p_entidad_colaboradora);
+    
+    COMMIT;
+    
+    SELECT 'Reto real creado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- READ: Obtener reto real por ID
+CREATE PROCEDURE sp_obtener_reto_real_por_id(
+    IN p_id VARCHAR(50)
+)
+BEGIN
+    SELECT 
+        r.id, r.tipo, r.titulo, r.descripcion, r.complejidad, r.areas_conocimiento,
+        r.created_at, r.updated_at,
+        rr.entidad_colaboradora
+    FROM retos r
+    INNER JOIN retos_reales rr ON r.id = rr.reto_id
+    WHERE r.id = p_id AND r.tipo = 'retoReal';
+END$$
+
+-- READ: Listar todos los retos reales
+CREATE PROCEDURE sp_listar_retos_reales()
+BEGIN
+    SELECT 
+        r.id, r.tipo, r.titulo, r.descripcion, r.complejidad, r.areas_conocimiento,
+        r.created_at, r.updated_at,
+        rr.entidad_colaboradora
+    FROM retos r
+    INNER JOIN retos_reales rr ON r.id = rr.reto_id
+    WHERE r.tipo = 'retoReal'
+    ORDER BY r.titulo;
+END$$
+
+-- UPDATE: Actualizar reto real
+CREATE PROCEDURE sp_actualizar_reto_real(
+    IN p_id VARCHAR(50),
+    IN p_titulo VARCHAR(255),
+    IN p_descripcion TEXT,
+    IN p_complejidad VARCHAR(50),
+    IN p_areas_conocimiento JSON,
+    IN p_entidad_colaboradora VARCHAR(255)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+    
+    START TRANSACTION;
+    
+    UPDATE retos 
+    SET titulo = p_titulo,
+        descripcion = p_descripcion,
+        complejidad = p_complejidad,
+        areas_conocimiento = p_areas_conocimiento,
+        updated_at = NOW()
+    WHERE id = p_id AND tipo = 'retoReal';
+    
+    UPDATE retos_reales 
+    SET entidad_colaboradora = p_entidad_colaboradora
+    WHERE reto_id = p_id;
+    
+    COMMIT;
+    
+    SELECT 'Reto real actualizado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- DELETE: Eliminar reto real
+CREATE PROCEDURE sp_eliminar_reto_real(
+    IN p_id VARCHAR(50)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+    
+    START TRANSACTION;
+    
+    -- Las foreign keys CASCADE eliminarán automáticamente de retos_reales
+    DELETE FROM retos WHERE id = p_id AND tipo = 'retoReal';
+    
+    COMMIT;
+    
+    SELECT 'Reto real eliminado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- =====================================================
+-- RETOS EXPERIMENTALES
+-- =====================================================
+
+-- CREATE: Crear reto experimental completo
+CREATE PROCEDURE sp_crear_reto_experimental(
+    IN p_id VARCHAR(50),
+    IN p_titulo VARCHAR(255),
+    IN p_descripcion TEXT,
+    IN p_complejidad VARCHAR(50),
+    IN p_areas_conocimiento JSON,
+    IN p_enfoque_pedagogico VARCHAR(255)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+    
+    START TRANSACTION;
+    
+    INSERT INTO retos (id, tipo, titulo, descripcion, complejidad, areas_conocimiento)
+    VALUES (p_id, 'retoExperimental', p_titulo, p_descripcion, p_complejidad, p_areas_conocimiento);
+    
+    INSERT INTO retos_experimentales (reto_id, enfoque_pedagogico)
+    VALUES (p_id, p_enfoque_pedagogico);
+    
+    COMMIT;
+    
+    SELECT 'Reto experimental creado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- READ: Obtener reto experimental por ID
+CREATE PROCEDURE sp_obtener_reto_experimental_por_id(
+    IN p_id VARCHAR(50)
+)
+BEGIN
+    SELECT 
+        r.id, r.tipo, r.titulo, r.descripcion, r.complejidad, r.areas_conocimiento,
+        r.created_at, r.updated_at,
+        re.enfoque_pedagogico
+    FROM retos r
+    INNER JOIN retos_experimentales re ON r.id = re.reto_id
+    WHERE r.id = p_id AND r.tipo = 'retoExperimental';
+END$$
+
+-- READ: Listar todos los retos experimentales
+CREATE PROCEDURE sp_listar_retos_experimentales()
+BEGIN
+    SELECT 
+        r.id, r.tipo, r.titulo, r.descripcion, r.complejidad, r.areas_conocimiento,
+        r.created_at, r.updated_at,
+        re.enfoque_pedagogico
+    FROM retos r
+    INNER JOIN retos_experimentales re ON r.id = re.reto_id
+    WHERE r.tipo = 'retoExperimental'
+    ORDER BY r.titulo;
+END$$
+
+-- UPDATE: Actualizar reto experimental
+CREATE PROCEDURE sp_actualizar_reto_experimental(
+    IN p_id VARCHAR(50),
+    IN p_titulo VARCHAR(255),
+    IN p_descripcion TEXT,
+    IN p_complejidad VARCHAR(50),
+    IN p_areas_conocimiento JSON,
+    IN p_enfoque_pedagogico VARCHAR(255)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+    
+    START TRANSACTION;
+    
+    UPDATE retos 
+    SET titulo = p_titulo,
+        descripcion = p_descripcion,
+        complejidad = p_complejidad,
+        areas_conocimiento = p_areas_conocimiento,
+        updated_at = NOW()
+    WHERE id = p_id AND tipo = 'retoExperimental';
+    
+    UPDATE retos_experimentales 
+    SET enfoque_pedagogico = p_enfoque_pedagogico
+    WHERE reto_id = p_id;
+    
+    COMMIT;
+    
+    SELECT 'Reto experimental actualizado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- DELETE: Eliminar reto experimental
+CREATE PROCEDURE sp_eliminar_reto_experimental(
+    IN p_id VARCHAR(50)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+    
+    START TRANSACTION;
+    
+    -- Las foreign keys CASCADE eliminarán automáticamente de retos_experimentales
+    DELETE FROM retos WHERE id = p_id AND tipo = 'retoExperimental';
+    
+    COMMIT;
+    
+    SELECT 'Reto experimental eliminado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- =====================================================
+-- HACKATHONS
+-- =====================================================
+
+-- CREATE: Crear hackathon
+CREATE PROCEDURE sp_crear_hackathon(
+    IN p_id VARCHAR(50),
+    IN p_nombre VARCHAR(255),
+    IN p_descripcion TEXT,
+    IN p_fecha_inicio DATE,
+    IN p_fecha_fin DATE,
+    IN p_lugar VARCHAR(255),
+    IN p_estado VARCHAR(50)
+)
+BEGIN
+    INSERT INTO hackathons (id, nombre, descripcion, fecha_inicio, fecha_fin, lugar, estado)
+    VALUES (p_id, p_nombre, p_descripcion, p_fecha_inicio, p_fecha_fin, p_lugar, p_estado);
+    
+    SELECT 'Hackathon creado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- READ: Obtener hackathon por ID
+CREATE PROCEDURE sp_obtener_hackathon_por_id(
+    IN p_id VARCHAR(50)
+)
+BEGIN
+    SELECT * FROM hackathons WHERE id = p_id;
+END$$
+
+-- READ: Listar todos los hackathons
+CREATE PROCEDURE sp_listar_hackathons()
+BEGIN
+    SELECT * FROM hackathons ORDER BY fecha_inicio DESC;
+END$$
+
+-- UPDATE: Actualizar hackathon
+CREATE PROCEDURE sp_actualizar_hackathon(
+    IN p_id VARCHAR(50),
+    IN p_nombre VARCHAR(255),
+    IN p_descripcion TEXT,
+    IN p_fecha_inicio DATE,
+    IN p_fecha_fin DATE,
+    IN p_lugar VARCHAR(255),
+    IN p_estado VARCHAR(50)
+)
+BEGIN
+    UPDATE hackathons 
+    SET nombre = p_nombre,
+        descripcion = p_descripcion,
+        fecha_inicio = p_fecha_inicio,
+        fecha_fin = p_fecha_fin,
+        lugar = p_lugar,
+        estado = p_estado
+    WHERE id = p_id;
+    
+    SELECT 'Hackathon actualizado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- DELETE: Eliminar hackathon
+CREATE PROCEDURE sp_eliminar_hackathon(
+    IN p_id VARCHAR(50)
+)
+BEGIN
+    DELETE FROM hackathons WHERE id = p_id;
+    SELECT 'Hackathon eliminado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- =====================================================
+-- EQUIPOS
+-- =====================================================
+
+-- CREATE: Crear equipo
+CREATE PROCEDURE sp_crear_equipo(
+    IN p_id VARCHAR(50),
+    IN p_nombre VARCHAR(255),
+    IN p_hackathon_id VARCHAR(50)
+)
+BEGIN
+    INSERT INTO equipos (id, nombre, hackathon_id)
+    VALUES (p_id, p_nombre, p_hackathon_id);
+    
+    SELECT 'Equipo creado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- READ: Obtener equipo por ID con estadísticas
+CREATE PROCEDURE sp_obtener_equipo_por_id(
+    IN p_id VARCHAR(50)
+)
+BEGIN
+    SELECT * FROM equipos_con_estadisticas WHERE id = p_id;
+END$$
+
+-- READ: Listar todos los equipos
+CREATE PROCEDURE sp_listar_equipos()
+BEGIN
+    SELECT * FROM equipos_con_estadisticas ORDER BY nombre;
+END$$
+
+-- UPDATE: Actualizar equipo
+CREATE PROCEDURE sp_actualizar_equipo(
+    IN p_id VARCHAR(50),
+    IN p_nombre VARCHAR(255),
+    IN p_hackathon_id VARCHAR(50)
+)
+BEGIN
+    UPDATE equipos 
+    SET nombre = p_nombre,
+        hackathon_id = p_hackathon_id,
+        updated_at = NOW()
+    WHERE id = p_id;
+    
+    SELECT 'Equipo actualizado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- DELETE: Eliminar equipo
+CREATE PROCEDURE sp_eliminar_equipo(
+    IN p_id VARCHAR(50)
+)
+BEGIN
+    DELETE FROM equipos WHERE id = p_id;
+    SELECT 'Equipo eliminado exitosamente' as mensaje, p_id as id;
+END$$
+
+-- =====================================================
+-- PROCEDIMIENTOS ADICIONALES PARA RELACIONES
+-- =====================================================
+
+-- Agregar participante a equipo
+CREATE PROCEDURE sp_agregar_participante_equipo(
+    IN p_equipo_id VARCHAR(50),
+    IN p_participante_id VARCHAR(50),
+    IN p_rol VARCHAR(100)
+)
+BEGIN
+    INSERT INTO equipo_participantes (equipo_id, participante_id, rol_en_equipo)
+    VALUES (p_equipo_id, p_participante_id, p_rol);
+    
+    SELECT 'Participante agregado al equipo exitosamente' as mensaje;
+END$$
+
+-- Asignar reto a equipo
+CREATE PROCEDURE sp_asignar_reto_equipo(
+    IN p_equipo_id VARCHAR(50),
+    IN p_reto_id VARCHAR(50)
+)
+BEGIN
+    INSERT INTO equipo_retos (equipo_id, reto_id, estado)
+    VALUES (p_equipo_id, p_reto_id, 'asignado');
+    
+    SELECT 'Reto asignado al equipo exitosamente' as mensaje;
+END$$
+
+-- Obtener participantes de un equipo
+CREATE PROCEDURE sp_obtener_participantes_equipo(
+    IN p_equipo_id VARCHAR(50)
+)
+BEGIN
+    SELECT 
+        p.id, p.tipo, p.nombre, p.email, p.nivel_habilidad,
+        ep.rol_en_equipo, ep.fecha_union
+    FROM participantes p
+    INNER JOIN equipo_participantes ep ON p.id = ep.participante_id
+    WHERE ep.equipo_id = p_equipo_id
+    ORDER BY ep.fecha_union;
+END$$
+
+-- Obtener retos de un equipo
+CREATE PROCEDURE sp_obtener_retos_equipo(
+    IN p_equipo_id VARCHAR(50)
+)
+BEGIN
+    SELECT 
+        r.id, r.tipo, r.titulo, r.descripcion, r.complejidad,
+        er.estado, er.progreso_porcentaje, er.fecha_asignacion
+    FROM retos r
+    INNER JOIN equipo_retos er ON r.id = er.reto_id
+    WHERE er.equipo_id = p_equipo_id
+    ORDER BY er.fecha_asignacion;
+END$$
+
+-- Obtener equipos de un reto
+CREATE PROCEDURE sp_obtener_equipos_reto(
+    IN p_reto_id VARCHAR(50)
+)
+BEGIN
+    SELECT 
+        e.id, e.nombre, e.hackathon_id,
+        er.estado, er.progreso_porcentaje,
+        COUNT(ep.participante_id) as total_miembros
+    FROM equipos e
+    INNER JOIN equipo_retos er ON e.id = er.equipo_id
+    LEFT JOIN equipo_participantes ep ON e.id = ep.equipo_id
+    WHERE er.reto_id = p_reto_id
+    GROUP BY e.id, e.nombre, e.hackathon_id, er.estado, er.progreso_porcentaje
+    ORDER BY er.progreso_porcentaje DESC;
+END$$
+
+-- Listar todos los participantes (estudiantes y mentores)
+CREATE PROCEDURE sp_listar_todos_participantes()
+BEGIN
+    SELECT * FROM participantes_completos ORDER BY nombre;
+END$$
+
+-- Listar todos los retos (reales y experimentales)
+CREATE PROCEDURE sp_listar_todos_retos()
+BEGIN
+    SELECT * FROM retos_completos ORDER BY titulo;
+END$$
+
+DELIMITER ;
+
