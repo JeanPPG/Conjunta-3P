@@ -1,11 +1,12 @@
 Ext.onReady(() => {
-    const personaJuridicaPanel = createPersonaJuridicaPanel();
+    const estudiantePanel = createEstudiantePanel();
+    const mentorTecnicoPanel = createMentorTecnicoPanel();
 
     const mainCard = Ext.create('Ext.panel.Panel', {
         region: 'center',
         layout: 'card',
         items: [
-            personaJuridicaPanel
+            estudiantePanel
         ],
     });
 
@@ -18,9 +19,15 @@ Ext.onReady(() => {
                 xtype: 'toolbar',
                 items: [
                     {
-                        text: 'Persona Jurídica',
+                        text: 'Estudiantes',
                         handler: () => {
-                            mainCard.getLayout().setActiveItem(personaJuridicaPanel);
+                            mainCard.getLayout().setActiveItem(estudiantePanel);
+                        }
+                    },
+                    {
+                        text: 'Mentores Técnicos',
+                        handler: () => {
+                            mainCard.getLayout().setActiveItem(mentorTecnicoPanel);
                         }
                     }
                 ],
