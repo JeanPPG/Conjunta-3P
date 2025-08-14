@@ -1,10 +1,11 @@
+-- Active: 1752793151268@@127.0.0.1@3306@conjunta3p_db
 -- =========================================================
 -- BASE DE DATOS
 -- =========================================================
 CREATE DATABASE IF NOT EXISTS conjunta3p_db
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
-USE eduhack_db;
+USE conjunta3p_db;
 
 -- =========================================================
 -- HACKATHON / EVENTO
