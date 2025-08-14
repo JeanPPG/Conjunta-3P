@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.33, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.40, for Win64 (x86_64)
 --
 -- Host: 127.0.0.1    Database: conjunta3p_db
 -- ------------------------------------------------------
--- Server version	8.2.0
+-- Server version	8.0.40
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -94,7 +94,7 @@ CREATE TABLE `equipos` (
   PRIMARY KEY (`id`),
   KEY `hackathon_id` (`hackathon_id`),
   CONSTRAINT `equipos_ibfk_1` FOREIGN KEY (`hackathon_id`) REFERENCES `hackathons` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -208,6 +208,7 @@ CREATE TABLE `mentores_tecnicos` (
 --
 
 /*!40000 ALTER TABLE `mentores_tecnicos` DISABLE KEYS */;
+INSERT INTO `mentores_tecnicos` VALUES (7,'Inteligencia Artificial',8,'Lunes a Viernes 14:00-18:00'),(8,'Desarrollo Full Stack',12,'Martes y Jueves 16:00-20:00'),(9,'Tecnologías Blockchain',6,'Fines de semana'),(10,'Diseño de Experiencia de Usuario',10,'Lunes, Miércoles, Viernes 15:00-19:00'),(11,'Internet de las Cosas',15,'Todos los días 10:00-12:00');
 /*!40000 ALTER TABLE `mentores_tecnicos` ENABLE KEYS */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -258,7 +259,7 @@ CREATE TABLE `participantes` (
   KEY `idx_participantes_tipo` (`tipo`),
   KEY `idx_participantes_email` (`email`),
   KEY `idx_participantes_nivel` (`nivel_habilidad`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -266,7 +267,7 @@ CREATE TABLE `participantes` (
 --
 
 /*!40000 ALTER TABLE `participantes` DISABLE KEYS */;
-INSERT INTO `participantes` VALUES (1,'estudiante','Lucía Mendoza','lucia.mendoza@estudiante.edu','intermedio','[\"JavaScript\", \"UI/UX\", \"Python\"]','2025-08-14 23:26:12','2025-08-14 23:26:12'),(2,'estudiante','Diego Ramírez','diego.ramirez@tech.edu','avanzado','[\"React\", \"Node.js\", \"MongoDB\", \"Docker\"]','2025-08-14 23:26:13','2025-08-14 23:26:13'),(3,'estudiante','Sofia González','sofia.gonzalez@estudiante.edu','principiante','[\"HTML\", \"CSS\", \"JavaScript\"]','2025-08-14 23:26:15','2025-08-14 23:26:15'),(4,'estudiante','Mateo Torres','mateo.torres@tech.edu','intermedio','[\"Python\", \"Machine Learning\", \"Data Analysis\"]','2025-08-14 23:26:17','2025-08-14 23:26:17'),(5,'estudiante','Valentina López','valentina.lopez@estudiante.edu','avanzado','[\"Flutter\", \"Dart\", \"Firebase\", \"Mobile Development\"]','2025-08-14 23:26:20','2025-08-14 23:26:20'),(6,'estudiante','Gabriel Herrera','gabriel.herrera@tech.edu','intermedio','[\"Java\", \"Spring Boot\", \"MySQL\"]','2025-08-14 23:26:21','2025-08-14 23:26:21');
+INSERT INTO `participantes` VALUES (1,'estudiante','Lucía Mendoza','lucia.mendoza@estudiante.edu','intermedio','[\"JavaScript\", \"UI/UX\", \"Python\"]','2025-08-14 23:26:12','2025-08-14 23:26:12'),(2,'estudiante','Diego Ramírez','diego.ramirez@tech.edu','avanzado','[\"React\", \"Node.js\", \"MongoDB\", \"Docker\"]','2025-08-14 23:26:13','2025-08-14 23:26:13'),(3,'estudiante','Sofia González','sofia.gonzalez@estudiante.edu','principiante','[\"HTML\", \"CSS\", \"JavaScript\"]','2025-08-14 23:26:15','2025-08-14 23:26:15'),(4,'estudiante','Mateo Torres','mateo.torres@tech.edu','intermedio','[\"Python\", \"Machine Learning\", \"Data Analysis\"]','2025-08-14 23:26:17','2025-08-14 23:26:17'),(5,'estudiante','Valentina López','valentina.lopez@estudiante.edu','avanzado','[\"Flutter\", \"Dart\", \"Firebase\", \"Mobile Development\"]','2025-08-14 23:26:20','2025-08-14 23:26:20'),(6,'estudiante','Gabriel Herrera','gabriel.herrera@tech.edu','intermedio','[\"Java\", \"Spring Boot\", \"MySQL\"]','2025-08-14 23:26:21','2025-08-14 23:26:21'),(7,'mentorTecnico','Dr. Carlos Rivas','carlos.rivas@mentor.edu','avanzado','[\"Inteligencia Artificial\", \"Machine Learning\", \"Python\", \"TensorFlow\"]','2025-08-14 23:48:40','2025-08-14 23:48:40'),(8,'mentorTecnico','Ing. María Elena Vásquez','maria.vasquez@mentor.edu','avanzado','[\"Desarrollo Web\", \"React\", \"Node.js\", \"DevOps\"]','2025-08-14 23:48:44','2025-08-14 23:48:44'),(9,'mentorTecnico','Dr. Roberto Chen','roberto.chen@mentor.edu','avanzado','[\"Blockchain\", \"Criptografía\", \"Solidity\", \"Web3\"]','2025-08-14 23:48:47','2025-08-14 23:48:47'),(10,'mentorTecnico','Ing. Patricia Morales','patricia.morales@mentor.edu','avanzado','[\"UX/UI Design\", \"Figma\", \"Design Thinking\", \"Mobile Design\"]','2025-08-14 23:48:49','2025-08-14 23:48:49'),(11,'mentorTecnico','Dr. Andrés Jiménez','andres.jimenez@mentor.edu','avanzado','[\"IoT\", \"Arduino\", \"Raspberry Pi\", \"Sensores\"]','2025-08-14 23:48:51','2025-08-14 23:48:51');
 /*!40000 ALTER TABLE `participantes` ENABLE KEYS */;
 
 --
@@ -288,7 +289,7 @@ CREATE TABLE `retos` (
   PRIMARY KEY (`id`),
   KEY `idx_retos_tipo` (`tipo`),
   KEY `idx_retos_complejidad` (`complejidad`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -296,6 +297,7 @@ CREATE TABLE `retos` (
 --
 
 /*!40000 ALTER TABLE `retos` DISABLE KEYS */;
+INSERT INTO `retos` VALUES (1,'retoReal','App para monitoreo de basureros ilegales','Desarrollar una aplicación móvil que permita a los ciudadanos reportar y geolocalizar basureros ilegales en tiempo real, con sistema de notificaciones a autoridades locales.','dificil','[\"Geolocalización\", \"Mobile Development\", \"Backend\", \"Base de datos\", \"Medioambiente\"]','2025-08-14 23:48:52','2025-08-14 23:48:52'),(2,'retoReal','Plataforma de intercambio de libros escolares','Sistema web para que estudiantes puedan intercambiar, prestar o donar libros escolares entre diferentes instituciones educativas.','media','[\"Desarrollo Web\", \"Base de datos\", \"Sistema de usuarios\", \"Geolocalización\"]','2025-08-14 23:48:57','2025-08-14 23:48:57'),(3,'retoReal','App de monitoreo de calidad del aire','Aplicación que integre datos de sensores IoT para mostrar la calidad del aire en tiempo real y generar alertas de salud pública.','dificil','[\"IoT\", \"Sensores\", \"Mobile Development\", \"Data Visualization\", \"Salud Pública\"]','2025-08-14 23:48:58','2025-08-14 23:48:58'),(4,'retoReal','Sistema de gestión de voluntarios','Plataforma web para gestionar voluntarios en ONGs, incluyendo registro, asignación de tareas y seguimiento de actividades.','media','[\"Desarrollo Web\", \"Gestión de usuarios\", \"Dashboard\", \"Reportes\"]','2025-08-14 23:48:59','2025-08-14 23:48:59'),(5,'retoExperimental','Simulador de ecosistemas con IA generativa','Usar inteligencia artificial generativa para modelar y simular cómo cambia un ecosistema ante diferentes cambios climáticos y actividades humanas.','media','[\"IA generativa\", \"Ecología\", \"Simulación\", \"Machine Learning\", \"Visualización\"]','2025-08-14 23:49:01','2025-08-14 23:49:01'),(6,'retoExperimental','Asistente virtual para aprendizaje personalizado','Desarrollar un chatbot educativo que se adapte al estilo de aprendizaje de cada estudiante y proporcione contenido personalizado.','media','[\"Natural Language Processing\", \"Machine Learning\", \"Chatbots\", \"Pedagogía\"]','2025-08-14 23:49:02','2025-08-14 23:49:02'),(7,'retoExperimental','Realidad aumentada para museos virtuales','Crear una experiencia de realidad aumentada que permita a los estudiantes explorar museos y sitios históricos de forma inmersiva.','dificil','[\"Realidad Aumentada\", \"3D Modeling\", \"Mobile Development\", \"Historia\", \"Arte\"]','2025-08-14 23:49:04','2025-08-14 23:49:04'),(8,'retoExperimental','Juego educativo de programación con blockchain','Desarrollar un juego donde los estudiantes aprendan programación resolviendo puzzles que involucran conceptos de blockchain y criptografía.','dificil','[\"Game Development\", \"Blockchain\", \"Educación\", \"Gamificación\"]','2025-08-14 23:49:05','2025-08-14 23:49:05');
 /*!40000 ALTER TABLE `retos` ENABLE KEYS */;
 
 --
@@ -318,6 +320,7 @@ CREATE TABLE `retos_experimentales` (
 --
 
 /*!40000 ALTER TABLE `retos_experimentales` DISABLE KEYS */;
+INSERT INTO `retos_experimentales` VALUES (5,'STEAM (Ciencia, Tecnología, Ingeniería, Arte, Matemáticas)'),(6,'ABP (Aprendizaje Basado en Proyectos)'),(7,'STEAM (Ciencia, Tecnología, Ingeniería, Arte, Matemáticas)'),(8,'Gamificación Educativa');
 /*!40000 ALTER TABLE `retos_experimentales` ENABLE KEYS */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -367,6 +370,7 @@ CREATE TABLE `retos_reales` (
 --
 
 /*!40000 ALTER TABLE `retos_reales` DISABLE KEYS */;
+INSERT INTO `retos_reales` VALUES (1,'GreenEarth ONG'),(2,'Fundación Educación para Todos'),(3,'Ministerio de Salud Ambiental'),(4,'Red de ONGs Locales');
 /*!40000 ALTER TABLE `retos_reales` ENABLE KEYS */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -1475,7 +1479,7 @@ BEGIN
 
     
 
-    -- Las foreign keys CASCADE eliminarán automáticamente de estudiantes
+    
 
     DELETE FROM participantes WHERE id = p_id AND tipo = 'estudiante';
 
@@ -1553,7 +1557,7 @@ BEGIN
 
     
 
-    -- Las foreign keys CASCADE eliminarán automáticamente de mentores_tecnicos
+    
 
     DELETE FROM participantes WHERE id = p_id AND tipo = 'mentorTecnico';
 
@@ -1604,7 +1608,7 @@ BEGIN
 
     
 
-    -- Las foreign keys CASCADE eliminarán automáticamente de retos_experimentales
+    
 
     DELETE FROM retos WHERE id = p_id AND tipo = 'retoExperimental';
 
@@ -1655,7 +1659,7 @@ BEGIN
 
     
 
-    -- Las foreign keys CASCADE eliminarán automáticamente de retos_reales
+    
 
     DELETE FROM retos WHERE id = p_id AND tipo = 'retoReal';
 
@@ -2312,4 +2316,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-08-14 18:39:01
+-- Dump completed on 2025-08-14 18:54:05
